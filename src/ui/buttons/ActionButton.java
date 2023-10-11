@@ -27,11 +27,9 @@ public class ActionButton extends JButton {
     private void init() {
         this.setText(this.calculationAction.getValue());
         this.setFocusPainted(false);
-
-        addActionListener();
     }
 
-    private void addActionListener() {
+    public void applyChangeActionListener() {
         this.addActionListener((event) -> {
             CalculationAction[] actions = CalculationAction.values();
             int currentActionOrdinal = this.getCalculationAction().ordinal(),

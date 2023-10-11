@@ -8,13 +8,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
+import java.math.BigDecimal;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static utils.UIUtils.mainDimension;
-import static utils.UIUtils.setPreferredSize;
 
 public class Window {
     private final JFrame frame;
@@ -56,6 +57,7 @@ public class Window {
 
         frame.add(mainPanel, BorderLayout.CENTER);
         frame.add(authorPanel, BorderLayout.SOUTH);
+
     }
 
     private void addActionsAndOperandsToPanel(JPanel queryPanel) {
@@ -77,6 +79,7 @@ public class Window {
     private ActionButton prepareButton() {
         ActionButton button = new ActionButton();
         button.addActionListener(e -> handleChange());
+        button.applyChangeActionListener();
         return button;
     }
 
@@ -102,21 +105,28 @@ public class Window {
     }
 
     private void handleChange() {
-        String result = calculator.calculate(
-                operands.stream()
-                        .map(JTextComponent::getText)
-                        .collect(Collectors.toList()),
-                actions.stream()
-                        .map(ActionButton::getCalculationAction)
-                        .collect(Collectors.toList())
-        );
+        try {
+            String result = calculator.calculate(
+                    operands.stream()
+                            .map(JTextComponent::getText)
+                            .collect(Collectors.toList()),
+                    actions.stream()
+                            .map(ActionButton::getCalculationAction)
+                            .collect(Collectors.toList())
+            );
+            resultField.setText(result);
 
-        resultField.setText(result);
-
-        mainPanel.revalidate();
-        mainPanel.repaint();
+            mainPanel.revalidate();
+            mainPanel.repaint();
+        } catch (ParseException e) {
+            e.printStackTrace();
+            handleError();
+        }
     }
 
+    private void handleError() {
+
+    }
 
     public void start() {
         frame.setVisible(true);
