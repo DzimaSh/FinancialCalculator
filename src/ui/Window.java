@@ -1,33 +1,33 @@
 package ui;
 
-import calculator.CalculationAction;
 import calculator.Calculator;
 import ui.buttons.ActionButton;
-import utils.Parser;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static ui.DimensionHandler.calculateRelativeSize;
-import static ui.DimensionHandler.getMainWidth;
+import static utils.UIUtils.mainDimension;
+import static utils.UIUtils.setPreferredSize;
 
 public class Window {
     private final JFrame frame;
-    private final Parser parser;
+    private JPanel mainPanel;
     private final Calculator calculator;
-    private final Dimension mainDimension;
 
-    private List<ActionButton> actions = new ArrayList<>();
-    private List<JTextField> operands = new ArrayList<>();
+    private final List<ActionButton> actions = new ArrayList<>();
+    private final List<JTextField> operands = new ArrayList<>();
+    private final JTextField resultField = new JTextField();
 
-    public Window(int width, int height) {
-        frame = new JFrame();
-        parser = new Parser();
+    public Window() {
+        frame = new JFrame("Financial Calculator");
         calculator = new Calculator();
-        mainDimension = new Dimension(width, height);
 
         initialize();
     }
@@ -36,58 +36,85 @@ public class Window {
         frame.setSize(mainDimension);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel mainPanel = new JPanel();
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        mainPanel = new JPanel();
         mainPanel.setSize(mainDimension.getSize());
         mainPanel.setLayout(new GridBagLayout());
 
         JPanel queryPanel = new JPanel();
-        queryPanel.setSize(calculateRelativeSize(0.75, 0.2));
-        queryPanel.setLayout(new BoxLayout(queryPanel, BoxLayout.X_AXIS));
         addActionsAndOperandsToPanel(queryPanel);
-        mainPanel.add(queryPanel);
+        JLabel equalSign = new JLabel("=");
+        queryPanel.add(equalSign);
+        resultField.setEditable(false);
+        queryPanel.add(resultField);
+        mainPanel.add(queryPanel, gbc);
 
-        frame.getContentPane().add(mainPanel);
+        JPanel authorPanel = new JPanel();
+        JLabel author = new JLabel("Created by Shushkevich Dzmitry");
+        authorPanel.add(author);
+
+        frame.add(mainPanel, BorderLayout.CENTER);
+        frame.add(authorPanel, BorderLayout.SOUTH);
     }
 
-    private JPanel addActionsAndOperandsToPanel(JPanel queryPanel) {
-        GridBagConstraints gbc_button = new GridBagConstraints();
-        gbc_button.fill = GridBagConstraints.HORIZONTAL;
-        gbc_button.insets = new Insets(0, 0, 5, 5);
-        gbc_button.gridx = 0;
-        gbc_button.gridy = 10;
-
-        GridBagConstraints gbc_operand = new GridBagConstraints();
-        gbc_operand.fill = GridBagConstraints.HORIZONTAL;
-        gbc_operand.insets = new Insets(0, 0, 5, 5);
-        gbc_operand.gridx = 0;
-        gbc_operand.gridy = 0;
+    private void addActionsAndOperandsToPanel(JPanel queryPanel) {
+        GridBagConstraints gbc = new GridBagConstraints();
 
         IntStream.range(0, 2)
-                .forEach(i -> {
-                    JTextField operand = new JTextField(10);
-                    operands.add(operand);
-                });
+                .forEach(i -> operands.add(prepareOperand()));
         IntStream.range(0, 1)
                 .forEach(i -> actions.add(prepareButton()));
 
         IntStream.range(0, Math.min(operands.size(), actions.size()))
                 .forEach(i -> {
-                    queryPanel.add(operands.get(i), gbc_operand);
-                    queryPanel.add(actions.get(i), gbc_button);
+                    queryPanel.add(operands.get(i), gbc);
+                    queryPanel.add(actions.get(i), gbc);
                 });
-        queryPanel.add(operands.getLast(), gbc_operand);
-        return queryPanel;
-    }
-
-    private JTextField prepareResultField() {
-        JTextField result = new JTextField();
-        result.setEditable(false);
-
-        return result;
+        queryPanel.add(operands.getLast(), gbc);
     }
 
     private ActionButton prepareButton() {
-        return new ActionButton(parser);
+        ActionButton button = new ActionButton();
+        button.addActionListener(e -> handleChange());
+        return button;
+    }
+
+    private JTextField prepareOperand() {
+        JTextField operand = new JTextField(10);
+        operand.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                handleChange();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                handleChange();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                handleChange();
+            }
+        });
+        return operand;
+    }
+
+    private void handleChange() {
+        String result = calculator.calculate(
+                operands.stream()
+                        .map(JTextComponent::getText)
+                        .collect(Collectors.toList()),
+                actions.stream()
+                        .map(ActionButton::getCalculationAction)
+                        .collect(Collectors.toList())
+        );
+
+        resultField.setText(result);
+
+        mainPanel.revalidate();
+        mainPanel.repaint();
     }
 
 

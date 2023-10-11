@@ -6,8 +6,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 
 public class Parser {
-
-    public BigDecimal parseValue(String number) throws ParseException {
+    public static BigDecimal parseValue(String number) throws ParseException {
         NumberFormat numberFormat = DecimalFormat.getInstance();
         numberFormat.setMaximumFractionDigits(15);
 

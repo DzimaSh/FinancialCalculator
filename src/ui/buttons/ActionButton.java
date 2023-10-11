@@ -2,29 +2,31 @@ package ui.buttons;
 
 import calculator.CalculationAction;
 import utils.Parser;
+import utils.UIUtils;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class ActionButton extends JButton {
-    protected final Parser parser;
     protected CalculationAction calculationAction;
 
-    public ActionButton(Parser parser) {
+    public ActionButton() {
         super();
-        this.parser = parser;
         this.calculationAction = CalculationAction.ADDITION;
 
-        this.setText(CalculationAction.ADDITION.getValue());
-
-        addActionListener();
+        init();
     }
 
-    public ActionButton(Parser parser, CalculationAction calculationAction) {
+    public ActionButton(CalculationAction calculationAction) {
         super();
-        this.parser = parser;
         this.calculationAction = calculationAction;
 
-        this.setText(calculationAction.getValue());
+        init();
+    }
+
+    private void init() {
+        this.setText(this.calculationAction.getValue());
+        this.setFocusPainted(false);
 
         addActionListener();
     }
@@ -42,10 +44,6 @@ public class ActionButton extends JButton {
             }
             this.setText(this.getCalculationAction().getValue());
         });
-    }
-
-    public Parser getParser() {
-        return parser;
     }
 
     public CalculationAction getCalculationAction() {
