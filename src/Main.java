@@ -8,7 +8,7 @@ public class Main {
         EventQueue.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                Window window = new Window();
+                Window window = new Window(600, 400);
                 window.start();
             } catch (Exception e) {
                 e.printStackTrace();
