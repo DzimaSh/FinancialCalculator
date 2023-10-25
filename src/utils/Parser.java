@@ -1,27 +1,32 @@
 package utils;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
+import java.math.RoundingMode;
 import java.text.ParseException;
 import java.util.Locale;
 
 public class Parser {
-    private static final DecimalFormat decimalFormat;
-
-    static {
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.of("en"));
-        decimalFormat = new DecimalFormat("#.##########", symbols);
-    }
     private static final BigDecimal MIN_VALUE = new BigDecimal("-1000000000000.000000");
     private static final BigDecimal MAX_VALUE = new BigDecimal("1000000000000.000000");
 
-    public static BigDecimal parseValue(String number) throws ParseException {
-        String normalizedNumber = number.replace(',', '.');
-        BigDecimal parsedValue = new BigDecimal(decimalFormat.parse(normalizedNumber).toString());
+    public static BigDecimal parseValue(String number) throws NumberFormatException, ParseException {
+        String normalizedNumber = number
+                .replace(',', '.');
+        if (normalizedNumber.toLowerCase(Locale.ROOT).contains("e")) {
+            throw new ParseException("Невалидный ввод: научная нотация запрещена.", 0);
+        }
+
+        BigDecimal parsedValue;
+        try {
+            parsedValue = new BigDecimal(normalizedNumber);
+        } catch (NumberFormatException e) {
+            throw new ParseException("Невалидный ввод...", 0);
+        }
+
+        parsedValue.setScale(6, RoundingMode.UNNECESSARY);
 
         if (parsedValue.compareTo(MIN_VALUE) < 0 || parsedValue.compareTo(MAX_VALUE) > 0) {
-            throw new ParseException("Parsed value is out of range", 0);
+            throw new NumberFormatException("Переполнение!");
         }
 
         return parsedValue;
