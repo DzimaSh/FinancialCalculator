@@ -8,14 +8,13 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static utils.UIUtils.mainDimension;
+import static utils.UIUtils.*;
 
 public class Window {
     private final JFrame frame;
@@ -24,7 +23,7 @@ public class Window {
 
     private final List<ActionButton> actions = new ArrayList<>();
     private final List<JTextField> operands = new ArrayList<>();
-    private final JTextField resultField = new JTextField();
+    private final JLabel resultField = new JLabel();
 
     public Window() {
         frame = new JFrame("Financial Calculator");
@@ -34,30 +33,33 @@ public class Window {
     }
 
     private void initialize() {
-        frame.setSize(mainDimension);
+        frame.setSize(MAIN_DIMENSION);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         GridBagConstraints gbc = new GridBagConstraints();
-
         mainPanel = new JPanel();
-        mainPanel.setSize(mainDimension.getSize());
+        mainPanel.setSize(MAIN_DIMENSION.getSize());
         mainPanel.setLayout(new GridBagLayout());
-
-        JPanel queryPanel = new JPanel();
-        addActionsAndOperandsToPanel(queryPanel);
-        JLabel equalSign = new JLabel("=");
-        queryPanel.add(equalSign);
-        resultField.setEditable(false);
-        queryPanel.add(resultField);
-        mainPanel.add(queryPanel, gbc);
-
-        JPanel authorPanel = new JPanel();
-        JLabel author = new JLabel("Подготовлено Шушкевичем Дмитрием. 3 курс, 12 группа");
-        authorPanel.add(author);
+        mainPanel.add(prepareQueryScrollPane(), gbc);
 
         frame.add(mainPanel, BorderLayout.CENTER);
-        frame.add(authorPanel, BorderLayout.SOUTH);
+        frame.add(prepareAuthorPanel(), BorderLayout.SOUTH);
+    }
 
+    private JScrollPane prepareQueryScrollPane() {
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
+        JPanel queryPanel = new JPanel();
+        JLabel equalSign = new JLabel("=");
+
+        addActionsAndOperandsToPanel(queryPanel);
+        queryPanel.add(equalSign);
+        queryPanel.add(resultField);
+
+        scrollPane.add(queryPanel);
+
+        return scrollPane;
     }
 
     private void addActionsAndOperandsToPanel(JPanel queryPanel) {
@@ -84,7 +86,8 @@ public class Window {
     }
 
     private JTextField prepareOperand() {
-        JTextField operand = new JTextField(10);
+        JTextField operand = new JTextField(TEXT_FIELD_SIZE);
+
         operand.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -102,6 +105,14 @@ public class Window {
             }
         });
         return operand;
+    }
+
+    private JPanel prepareAuthorPanel() {
+        JPanel authorPanel = new JPanel();
+        JLabel author = new JLabel();
+        authorPanel.add(author);
+
+        return authorPanel;
     }
 
     private void handleChange() {
