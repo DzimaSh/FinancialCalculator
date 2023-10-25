@@ -36,31 +36,37 @@ public class Window {
         frame.setSize(MAIN_DIMENSION);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        JLabel errorArea = prepareErrorComponent();
+
         mainPanel = new JPanel();
         mainPanel.setSize(MAIN_DIMENSION);
-        mainPanel.add(prepareQueryScrollPane());
+
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+        mainPanel.add(prepareQueryScrollPane(errorArea));
+        mainPanel.add(Box.createVerticalGlue());
+        mainPanel.add(errorArea);
 
         frame.add(mainPanel, BorderLayout.CENTER);
         frame.add(prepareAuthorPanel(), BorderLayout.SOUTH);
         frame.setVisible(true);
     }
 
-    private JComponent prepareQueryScrollPane() {
+    private JComponent prepareQueryScrollPane(JLabel errorArea) {
         JPanel queryPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JLabel equalSign = new JLabel("=");
 
-        addActionsAndOperandsToPanel(queryPanel);
+        addActionsAndOperandsToPanel(queryPanel, errorArea);
         queryPanel.add(equalSign);
         queryPanel.add(resultField);
 
         return queryPanel;
     }
 
-    private void addActionsAndOperandsToPanel(JPanel queryPanel) {
+    private void addActionsAndOperandsToPanel(JPanel queryPanel, JLabel errorArea) {
         IntStream.range(0, 2)
-                .forEach(i -> operands.add(prepareOperand()));
+                .forEach(i -> operands.add(prepareOperand(errorArea)));
         IntStream.range(0, 1)
-                .forEach(i -> actions.add(prepareButton()));
+                .forEach(i -> actions.add(prepareButton(errorArea)));
 
         IntStream.range(0, Math.min(operands.size(), actions.size()))
                 .forEach(i -> {
@@ -70,30 +76,30 @@ public class Window {
         queryPanel.add(operands.getLast());
     }
 
-    private ActionButton prepareButton() {
+    private ActionButton prepareButton(JLabel errorArea) {
         ActionButton button = new ActionButton();
-        button.addActionListener(e -> handleChange());
+        button.addActionListener(e -> handleChange(errorArea));
         button.applyChangeActionListener();
         return button;
     }
 
-    private JTextField prepareOperand() {
+    private JTextField prepareOperand(JLabel errorArea) {
         JTextField operand = new JTextField(TEXT_FIELD_SIZE);
 
         operand.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                handleChange();
+                handleChange(errorArea);
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                handleChange();
+                handleChange(errorArea);
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                handleChange();
+                handleChange(errorArea);
             }
         });
         return operand;
@@ -107,7 +113,14 @@ public class Window {
         return authorPanel;
     }
 
-    private void handleChange() {
+    private JLabel prepareErrorComponent() {
+        JLabel error = new JLabel();
+        error.setForeground(Color.RED);
+
+        return error;
+    }
+
+    private void handleChange(JLabel errorArea) {
         try {
             String result = calculator.calculate(
                     operands.stream()
@@ -118,17 +131,17 @@ public class Window {
                             .collect(Collectors.toList())
             );
             resultField.setText(result);
+            errorArea.setText("");
 
             mainPanel.revalidate();
             mainPanel.repaint();
-        } catch (ParseException e) {
-            System.out.println(e.getMessage());
-            handleError();
+        } catch (Exception e) {
+            handleError(errorArea, e.getMessage());
         }
     }
 
-    private void handleError() {
-
+    private void handleError(JLabel errorArea, String errorText) {
+        errorArea.setText(errorText);
     }
 
     public void start() {
