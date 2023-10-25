@@ -52,7 +52,7 @@ public class Window {
         mainPanel.add(queryPanel, gbc);
 
         JPanel authorPanel = new JPanel();
-        JLabel author = new JLabel("Created by Shushkevich Dzmitry");
+        JLabel author = new JLabel("Подготовлено Шушкевичем Дмитрием. 3 курс, 12 группа");
         authorPanel.add(author);
 
         frame.add(mainPanel, BorderLayout.CENTER);
