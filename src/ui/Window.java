@@ -36,35 +36,27 @@ public class Window {
         frame.setSize(MAIN_DIMENSION);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        GridBagConstraints gbc = new GridBagConstraints();
         mainPanel = new JPanel();
-        mainPanel.setSize(MAIN_DIMENSION.getSize());
-        mainPanel.setLayout(new GridBagLayout());
-        mainPanel.add(prepareQueryScrollPane(), gbc);
+        mainPanel.setSize(MAIN_DIMENSION);
+        mainPanel.add(prepareQueryScrollPane());
 
         frame.add(mainPanel, BorderLayout.CENTER);
         frame.add(prepareAuthorPanel(), BorderLayout.SOUTH);
+        frame.setVisible(true);
     }
 
-    private JScrollPane prepareQueryScrollPane() {
-        JScrollPane scrollPane = new JScrollPane();
-        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-        JPanel queryPanel = new JPanel();
+    private JComponent prepareQueryScrollPane() {
+        JPanel queryPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JLabel equalSign = new JLabel("=");
 
         addActionsAndOperandsToPanel(queryPanel);
         queryPanel.add(equalSign);
         queryPanel.add(resultField);
 
-        scrollPane.add(queryPanel);
-
-        return scrollPane;
+        return queryPanel;
     }
 
     private void addActionsAndOperandsToPanel(JPanel queryPanel) {
-        GridBagConstraints gbc = new GridBagConstraints();
-
         IntStream.range(0, 2)
                 .forEach(i -> operands.add(prepareOperand()));
         IntStream.range(0, 1)
@@ -72,10 +64,10 @@ public class Window {
 
         IntStream.range(0, Math.min(operands.size(), actions.size()))
                 .forEach(i -> {
-                    queryPanel.add(operands.get(i), gbc);
-                    queryPanel.add(actions.get(i), gbc);
+                    queryPanel.add(operands.get(i));
+                    queryPanel.add(actions.get(i));
                 });
-        queryPanel.add(operands.getLast(), gbc);
+        queryPanel.add(operands.getLast());
     }
 
     private ActionButton prepareButton() {
@@ -109,7 +101,7 @@ public class Window {
 
     private JPanel prepareAuthorPanel() {
         JPanel authorPanel = new JPanel();
-        JLabel author = new JLabel();
+        JLabel author = new JLabel(AUTHOR_LABEL);
         authorPanel.add(author);
 
         return authorPanel;
@@ -130,7 +122,7 @@ public class Window {
             mainPanel.revalidate();
             mainPanel.repaint();
         } catch (ParseException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             handleError();
         }
     }
